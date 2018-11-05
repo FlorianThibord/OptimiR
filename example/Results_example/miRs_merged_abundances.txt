@@ -1,0 +1,11 @@
+REFERENCE	S1	S2	TOTAL	PARENTS	CROSS_MAPPING	CROSS_MAPPING_COUNTS
+hsa-miR-122-5p	2.0	0	2.0	hsa-mir-122[100.00%]		0
+hsa-miR-1255b-5p	136.0	92.0	228.0	multiple[100.00%]		0
+hsa-miR-1304-3p	74.0	38.0	112.0	hsa-mir-1304_rs2155248[100.00%]		0
+hsa-miR-339-3p	0	41.0	41.0	hsa-mir-339[100.00%]		0
+hsa-miR-4433b-3p	597.0	196.0	793.0	hsa-mir-4433b[28.75%]/hsa-mir-4433b_rs12473206G[71.25%]		0
+hsa-miR-4741	0	39.0	39.0	hsa-mir-4741[100.00%]		0
+hsa-miR-4745-5p	0	23.0	23.0	hsa-mir-4745[100.00%]		0
+hsa-miR-4999-5p	35.0	0	35.0	hsa-mir-4999[100.00%]		0
+hsa-miR-548j-5p	0	22.0	22.0	hsa-mir-548j[100.00%]		0
+hsa-miR-7854-3p	71.0	33.0	104.0	hsa-mir-7854_rs2925980[100.00%]		0

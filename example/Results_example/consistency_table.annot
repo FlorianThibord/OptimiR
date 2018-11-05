@@ -1,0 +1,13 @@
+Sample_Name	polymiR	rsID_list	Genotype_list	Consistent_Counts	Inconsistent_Counts	Rate_Inconsistents	Flag
+S1	hsa-miR-4433b-3p	rs12473206G	0/1	597.0	0	0.0	
+S1	hsa-miR-4999-5p	rs72996752	0/0	35.0	0	0.0	
+S1	hsa-miR-1255b-5p	rs6841938	0/0	136.0	0	0.0	
+S1	hsa-miR-7854-3p	rs2925980	1/1	71.0	0	0.0	
+S1	hsa-miR-1304-3p	rs2155248	1/1	74.0	0	0.0	
+S2	hsa-miR-4745-5p	rs10422347	0/1	23.0	0	0.0	
+S2	hsa-miR-4433b-3p	rs12473206G	0/0	196.0	0	0.0	
+S2	hsa-miR-1255b-5p	rs6841938	0/0	92.0	28.0	0.233333333333	SUSPICIOUS
+S2	hsa-miR-339-3p	rs72631820	0/0	41.0	0	0.0	
+S2	hsa-miR-7854-3p	rs2925980	1/1	33.0	0	0.0	
+S2	hsa-miR-1304-3p	rs2155248	1/1	38.0	0	0.0	
+S2	hsa-miR-4741	rs7227168	0/0	39.0	0	0.0	

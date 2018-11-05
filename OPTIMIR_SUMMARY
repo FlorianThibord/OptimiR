@@ -1,0 +1,193 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# Florian THIBORD : florian.thibord@inserm.fr
+# (08/09/17)
+########################################################
+#                  OPTIMIR PIPELINE                    #
+########################################################
+# Unify outputs from pipeline for miRs, polymiRs, and isomiRs
+# Usage : python make_abundance_table.py /path/to/OptimiR/Results/dir
+# Standard libraries
+import sys, os, time
+
+def get_sample_list(path_dir):
+    file_list = os.listdir(path_dir)
+    categories = set()
+    samples_name = set()
+    for f in file_list:
+        if not('.annot' in f) and not('inconsistent' in f):
+            cat, name = f.split('_abundances.txt')[0].split('.')
+            categories.add(cat)
+            samples_name.add(name)
+    return list(samples_name), list(categories)
+
+def process_annotations(table_annot, total):
+    parent_list = [p for p in table_annot['parents'] if p != ""]
+    cross_mapp_list = [cm for cm in table_annot['cross_mapps'] if cm != ""]
+    cross_mapp_glob = 0
+    ## parents
+    parent_dict = {}
+    for parents in parent_list:
+        parents_l = parents.split('/')
+        for parent in parents_l:
+            counts = float(parent.split('|')[1].split('reads')[0])
+            if '+' in parent:
+                name = "multiple"
+            else:
+                name = parent.split('[')[0]
+            if parent_dict.has_key(name):
+                parent_dict[name] += counts
+            else:
+                parent_dict[name] = counts
+    parent_out = ["{}[{}%]".format(parent_name, "%.2f" % (counts*100/float(total))) for parent_name, counts in parent_dict.items()]
+    ## cross_mapps
+    cross_mapp_dict = {}
+    for cross_mapps in cross_mapp_list:
+        cross_mapps_l = cross_mapps.split('/')
+        for cross_mapp in cross_mapps_l:
+            counts = float(cross_mapp.split('|')[1].split('reads')[0])
+            cross_mapp_glob += counts
+            name = cross_mapp.split('[')[0]
+            if cross_mapp_dict.has_key(name):
+                cross_mapp_dict[name] += counts
+            else:
+                cross_mapp_dict[name] = counts
+    cross_mapp_out = ["{}[{}({}%)]".format(cross_mapp_name, counts, "%.2f" % (counts*100/float(total))) for cross_mapp_name, counts in cross_mapp_dict.items()]
+    return '/'.join(parent_out), '/'.join(cross_mapp_out), cross_mapp_glob
+
+def write_abundances_table(table, sample_list, cat, path_dir):
+    sample_list.sort()
+    ref_list = table.keys()
+    ref_list.sort()
+    output = open('{}/../{}_abundances.txt'.format(path_dir, cat), 'w')
+    header = ['REFERENCE']
+    header.extend(sample_list)
+    header.extend(['TOTAL', "PARENTS", "CROSS_MAPPING", "CROSS_MAPPING_COUNTS"])
+    output.write('\t'.join(header) + "\n")
+    for ref in ref_list:
+        l = [ref]
+        total = 0
+        for sample in sample_list:
+            try:
+                count = table[ref][sample]
+            except KeyError:
+                count = '0'
+            l.append(count)
+            total += float(count)
+        parent, cross_mapp, cross_mapp_glob = process_annotations(table[ref], total)
+        l.extend([str(total), parent, cross_mapp, str(cross_mapp_glob)])
+        output.write('\t'.join(l) + "\n")
+    output.close()
+
+
+def print_table(list_files, path_out, path_in):
+    header_printed = False
+    with open(path_out, 'w') as out:
+        for f in list_files:
+            with open(path_in + "/" + f, 'r') as in_f:
+                header = in_f.next()
+                if not(header_printed):
+                    out.write(header)
+                    header_printed = True
+                for l in in_f:
+                    out.write(l)
+
+def print_iso_dist(list_files, path_out, path_in):
+    header = "\t".join(["Reference" ,"Canonical_PCT", "End3_Canonical_PCT", "End5_Canonical_PCT", "End3_Trim_PCT", "End5_Trim_PCT", "End3_Tail_NT_PCT", "End5_Tail_NT_PCT", "End3_Tail_TE_PCT", "End5_Tail_TE_PCT", "End3_TrimTail_PCT", "End5_TrimTail_PCT", "Total"])
+    iso_dict = {}
+    for f in list_files:
+        with open(path_in + "/" + f, 'r') as in_f:
+            h = in_f.next()
+            for l in in_f:
+                elts = l.split('\t')
+                reference_name, cano, i3_cano, i5_cano, i3_trim, i5_trim, i3_tail, i5_tail, i3_TE, i5_TE, i3_trimtail, i5_trimtail, total = elts
+                if not(iso_dict.has_key(reference_name)):
+                    iso_dict[reference_name] = {"cano":0, "i3_cano":0, "i5_cano":0, "i3_trim":0, "i5_trim":0, "i3_tail":0, "i5_tail":0, "i3_TE":0, "i5_TE":0, "i3_trimtail":0, "i5_trimtail":0, "total":0}
+                ## Add counts
+                iso_dict[reference_name]["cano"] += float(cano) * float(total) / 100.
+                iso_dict[reference_name]["i3_cano"] += float(i3_cano) * float(total) / 100.
+                iso_dict[reference_name]["i5_cano"] += float(i5_cano) * float(total) / 100.
+                iso_dict[reference_name]["i3_trim"] += float(i3_trim) * float(total) / 100.
+                iso_dict[reference_name]["i5_trim"] += float(i5_trim) * float(total) / 100.
+                iso_dict[reference_name]["i3_tail"] += float(i3_tail) * float(total) / 100.
+                iso_dict[reference_name]["i5_tail"] += float(i5_tail) * float(total) / 100.
+                iso_dict[reference_name]["i3_TE"] += float(i3_TE) * float(total) / 100.
+                iso_dict[reference_name]["i5_TE"] += float(i5_TE) * float(total) / 100.
+                iso_dict[reference_name]["i3_trimtail"] += float(i3_trimtail) * float(total) / 100.
+                iso_dict[reference_name]["i5_trimtail"] += float(i5_trimtail) * float(total) / 100.
+                iso_dict[reference_name]["total"] += float(total)
+    ref_list = iso_dict.keys()
+    ref_list.sort()
+    with open(path_out, 'w') as out:
+        out.write(header + "\n")
+        for reference_name in ref_list:
+            total = float(iso_dict[reference_name]["total"])
+            cano = float(iso_dict[reference_name]["cano"])
+            i3_cano = float(iso_dict[reference_name]["i3_cano"])
+            i5_cano = float(iso_dict[reference_name]["i5_cano"])
+            i3_trim = float(iso_dict[reference_name]["i3_trim"])
+            i5_trim = float(iso_dict[reference_name]["i5_trim"])
+            i3_tail = float(iso_dict[reference_name]["i3_tail"])
+            i5_tail = float(iso_dict[reference_name]["i5_tail"])
+            i3_TE = float(iso_dict[reference_name]["i3_TE"])
+            i5_TE = float(iso_dict[reference_name]["i5_TE"])
+            i3_trimtail = float(iso_dict[reference_name]["i3_trimtail"])
+            i5_trimtail = float(iso_dict[reference_name]["i5_trimtail"])
+            ## This should never happen
+            if total == 0:
+                total = 1
+                print("Essentials WARNING : NUL TOTAL in isomiRs distribution calculation")
+            l = "\t".join([reference_name, str(cano * 100. / total), str(i3_cano * 100. / total), str(i5_cano * 100. / total), str(i3_trim * 100. / total), str(i5_trim * 100. / total), str(i3_tail * 100. / total), str(i5_tail * 100. / total), str(i3_TE * 100. / total), str(i5_TE * 100. / total), str(i3_trimtail * 100. / total), str(i5_trimtail * 100. / total), str(total)]) + "\n"
+            out.write(l)
+
+    
+def print_tables(path_dir):
+    sample_list, categories = get_sample_list(path_dir)
+    for cat in categories:
+        table = {}
+        for sample in sample_list:
+            sample_file = open('{}/{}.{}_abundances.txt'.format(path_dir, cat, sample), 'r')
+            header = sample_file.next()
+            for l in sample_file:
+                elts = l.split('\n')[0].split('\t')
+                ref, counts = elts[:2]
+                if len(elts) == 4:#hairpin and cross_mapp availables
+                    parent, cross_mapp = elts[2:]
+                else:
+                    parent, cross_mapp = "", ""
+                if table.has_key(ref):
+                    table[ref][sample] = counts
+                    table[ref]["parents"].append(parent)
+                    table[ref]["cross_mapps"].append(cross_mapp)
+                else:
+                    table[ref] = {sample : counts, "parents" : [parent], "cross_mapps" : [cross_mapp]}
+            sample_file.close()
+        write_abundances_table(table, sample_list, cat, path_dir)
+    ## Gather polymiRs tables
+    list_poly_files = [f for f in os.listdir(path_dir) if "polymiRs_table." in f]
+    path_table_poly = '{}/../polymiRs_table.annot'.format(path_dir)
+    if list_poly_files != []:
+        print_table(list_poly_files, path_table_poly, path_dir)
+    list_consist_files = [f for f in os.listdir(path_dir) if "consistency_table." in f]
+    path_table_consist = '{}/../consistency_table.annot'.format(path_dir)
+    if list_consist_files != []:
+        print_table(list_consist_files, path_table_consist, path_dir)
+    list_iso_files = [f for f in os.listdir(path_dir) if "isomiRs_dist." in f]
+    path_iso_dist = '{}/../isomiRs_dist.annot'.format(path_dir)
+    if list_iso_files != []:
+        print_iso_dist(list_iso_files, path_iso_dist, path_dir)
+        
+### MAIN
+if __name__ == "__main__":
+    print '\n ############################'
+    print ' #  OPTIMIR: Write summary  #'
+    print ' ############################'
+    start = time.time()
+    if len(sys.argv) == 2:
+        #directory containing all outputs
+        path = sys.argv[1]
+    else:
+        print "Error: Usage : python make_abundance_table.py /path/to/OptimiR/Results/dir"
+        exit(1)
+    print_tables(path)
+        
