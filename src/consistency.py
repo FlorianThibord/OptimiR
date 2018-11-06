@@ -8,7 +8,7 @@
 from pysam import AlignmentFile
 
 # Personal libraries
-from essentials import *
+from .essentials import *
 
 ## Number of inconsistent reads aligned on a polymiR above wich the alignment is flagged as suspicious
 ## This value is paired with INCONSISTENT_RATE_THRESHOLD provided by the user
@@ -54,7 +54,7 @@ def check_no_soft_clip_on_variant(bam_dict, sample_name, d_OptimiR):
                     for variant in OptimiR_obj.variants:
                         if is_variant_soft_clipped(alignment, variant, len(OptimiR_obj.sequence)):
                             is_soft_clipped = True
-                    if not(poly_dict.has_key(key_dict)):
+                    if key_dict not in poly_dict:
                         poly_dict[key_dict] = {"sc":[], "others":[]}
                     if is_soft_clipped:
                         poly_dict[key_dict]["sc"].append(reference_name)
@@ -68,7 +68,7 @@ def check_no_soft_clip_on_variant(bam_dict, sample_name, d_OptimiR):
                 OptimiR_obj = d_OptimiR[reference_name]
                 original_polymiR_name = OptimiR_obj.name
                 key_dict = read_name + "/" + original_polymiR_name
-                if poly_dict.has_key(key_dict):
+                if key_dict in poly_dict:
                     align_dict = poly_dict[key_dict]
                     if (len(align_dict["others"]) == 1) and (reference_name in align_dict["sc"]):
                         alignment.set_tag("XX", "DISCARDED_SC")
@@ -157,7 +157,7 @@ def write_polymiRs_outputs(bam_dict, bam, collapse_table, sample_name, dir_resul
                     if alignment.get_tag("XX") == "DISCARDED_GENO":
                         if len(reference_names) == 0: ## If it doesn't map anywhere else
                             ## Save in inconsistents
-                            if bam_inconsistents.has_key(read_name):
+                            if read_name in bam_inconsistents:
                                 bam_inconsistents[read_name].append(alignment)
                             else:
                                 bam_inconsistents[read_name] = [alignment]

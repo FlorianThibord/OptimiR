@@ -7,7 +7,7 @@
 from pysam import AlignmentFile
 
 ## Personal library
-from essentials import *
+from .essentials import *
 
 def trimming_in_5end(alignment):
     pos = alignment.reference_start
@@ -51,8 +51,8 @@ def trimming_in_3end(alignment, reference_seq):
             nb_3 = len(reference_seq) - (len(alignment.seq) + pos - sc_offset5)
     return (trim3_flag, nb_3)
 
-def return_tail(tail_read, tail_ref):
-    return ''.join(map((lambda (read, ref): read if read == ref else read.lower()), zip(tail_read, tail_ref)))
+def return_tail(tail_read, tail_ref): ## python3 made it weird with lambda tuples...
+    return ''.join(map(lambda mytuple: mytuple[0] if mytuple[0] == mytuple[1] else mytuple[0].lower(), list(zip(tail_read, tail_ref)))) 
 
 # Must be called after trimming
 # Compute tail only (no trim + tail)
@@ -123,7 +123,7 @@ def compute_isoform(a, reference_seq, hairpin_seq=''):
     return '[{},{}]'.format(iso5, iso3)
 
 def multi_orig_hairpin(isotype_d):
-    names, isotypes = isotype_d.keys(), isotype_d.values()
+    names, isotypes = list(isotype_d.keys()), list(isotype_d.values())
     # if isotypes identical return only one
     identical = True
     for isotype in isotypes:

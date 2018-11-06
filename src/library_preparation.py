@@ -8,14 +8,13 @@
 #############################################
 
 ## Personal libraries
-from essentials import *
-import mapping
-import os, sys
+from .essentials import *
+from . import mapping
 
 ## Other libraries
 import pickle
 import subprocess
-
+import os, sys
 
 ###########################################################
 ## Functions definitions 
@@ -29,7 +28,7 @@ def add_in_d_mat_coord(d_mat_coord, sequence, ID):
     end = coordinates.end
     for i in range(start, end + 1):
         key = "{}:{}".format(chrom, i)
-        if not(d_mat_coord.has_key(key)):
+        if key not in d_mat_coord:
             d_mat_coord[key] = []
         d_mat_coord[key].append(ID)
 
@@ -54,7 +53,7 @@ def make_sequence_dict(matures_filename, gff3_filename):
                     ID_or_Name = coordinates.Name
                 else: ## else for miRCarta : ID as ident description
                     ID_or_Name = coordinates.ID
-                if not(d_ident.has_key(ID_or_Name)):
+                if ID_or_Name not in d_ident:
                     d_ident[ID_or_Name] = []
                 d_ident[ID_or_Name].append(coordinates.ID)
     d_fasta_matures = parse_fasta(matures_filename)
@@ -90,7 +89,7 @@ def make_polymiRs(d_sequence, vcf_filename, d_mat_coord):
                 set_mature_ids = set()
                 for i in range(pos, pos + len(ref) + 1):
                     key = "{}:{}".format(chrom, i)
-                    if d_mat_coord.has_key(key):
+                    if key in d_mat_coord:
                         ID_list = d_mat_coord[key]
                         for ID in ID_list:
                             set_mature_ids.add(ID)
@@ -146,7 +145,7 @@ def write_log_from_Sequences(d_sequence, out_log):
             for variant in sequence.variants:
                 rsID = variant.rsID
                 variants.add(rsID)
-                if not(d_pol.has_key(rsID)):
+                if rsID not in d_pol:
                     d_pol[rsID] = []
                 d_pol[rsID].append(sequence.ident)
             if len(sequence.variants) > 1:
@@ -171,7 +170,7 @@ def make_OptimiR_dict(d_sequence, d_ident):
         ## retrieve all polymiRs, and all hairpins associated. For each polymiR, create an OptimiR obj
         ## For each sequence, store an OptimiR obj with all hairpins associated
         for ident in ident_list:
-            if ident in d_sequence.keys():
+            if ident in d_sequence:
                 is_mature = True
                 sequence_obj = d_sequence[ident]
                 coordinates = sequence_obj.coordinates
@@ -194,13 +193,13 @@ def make_OptimiR_dict(d_sequence, d_ident):
                             if variant.rsID in variant_name_list:
                                 variants.append(variant)
                                 OptimiR_variant_list.append(variant)
-                        if d_OptimiR.has_key(polymiR_id):
+                        if polymiR_id in d_OptimiR:
                             print("polymiR already exists : {}".format(polymiR_id))
                         polymiR_list.append(polymiR_id)
                         d_OptimiR[polymiR_id] = OptimiR(polymiR_sequence, name, ident, coordinates, [], list(set(variants)), d_polymiR_hairpins)
                 ## Retrieve hairpins
                 for hairpin_name, hairpin_seq in hairpins[name].items():
-                    if new_hairpins_dict.has_key(hairpin_name):
+                    if hairpin_name in new_hairpins_dict:
                         print("Hairpin allready present : {} in {}".format(hairpin_name, new_hairpin_dict))
                     new_hairpins_dict[hairpin_name] = hairpin_seq
         if is_mature:
@@ -228,10 +227,6 @@ def check_library_modifications(matures_filename, vcf_filename, lib_infos_pickle
         identical_fasta = fasta_matures_hash == fasta_matures_previous_hash
         identical_vcf = vcf_hash == vcf_previous_hash
         if not(identical_fasta) or not(identical_vcf):
-            print matures_filename
-            print vcf_filename
-            print identical_fasta
-            print identical_vcf
             print("Rebuild library")
             build_index = True
     return build_index, vcf_hash, fasta_matures_hash
@@ -252,7 +247,7 @@ def prepare_library(BOWTIE2_BUILD, VCF, MATURES, HAIRPINS, GFF3, out_directory, 
         check_if_file_exists(GFF3)
     except InputError as err:
         print("ERROR during library preparation: file {} does not exists. Check input filename and try again.\n".format(err.input_name))
-	sys.exit(4)
+        sys.exit(4)
     build_index, vcf_hash, fasta_matures_hash = check_library_modifications(MATURES, VCF, lib_infos_pickle_path, d_OptimiR_pickle_path)
     if build_index:
         ## Build dicts

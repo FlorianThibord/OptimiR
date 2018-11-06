@@ -4,13 +4,13 @@ HAIRPINS=./resources/fasta//hsa_hairpins_miRBase_v21.fa
 GFF3=./resources/coordinates/hsa_miRBase_v21.gff3
 DIR_OUT=./Results
 
-# First prepare library
+# First prepare library if OptimiR is launched in parallel jobs. In this example, they are launched sequentially
 # python ./src/library_preparation.py \
-#        -v ../$VCF \
-#        -m ../$MATURES \
-#        -p ../$HAIRPINS \
-#        -g ../$GFF3 \
-#        -o ../$DIR_OUT/OptimiR_lib/
+#        -v $VCF \
+#        -m $MATURES \
+#        -p $HAIRPINS \
+#        -g $GFF3 \
+#        -o $DIR_OUT/OptimiR_lib/
 
 # Launch OptimiR on each sample (parallel computation is recommanded for many samples)
 ./OPTIMIR \

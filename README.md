@@ -5,7 +5,7 @@ miRSeq data alignment workflow - integrates genetic information to assess the im
 
 The following python libraries must be installed: pysam and biopython (available through pip).
 The following programs must be installed: bowtie2, cutadapt, samtools. If the path of these programs is not in $PATH, you can provide it directly to OPTIMIR (see ./OPTIMIR --help).
-As of nov. 2018 OptimiR has been only used (successfuly) in a GNU/Linux environment.
+As of nov. 2018 OptimiR has been only used (successfuly) in a GNU/Linux environment. Works fine with python2 and python3.
 
 ## Usage
 

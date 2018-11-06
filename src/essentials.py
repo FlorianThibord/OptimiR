@@ -210,7 +210,7 @@ class Sequence:
         ## at this point, only one sequence in hairpins_dict
         if len(self.hairpins_dict[self.ident].items()) != 1:
             print("Hairpin issue!! {}".format(hairpins_dict))
-        hairpin_id, hairpin_seq = self.hairpins_dict[self.ident].items()[0]
+        hairpin_id, hairpin_seq = list(self.hairpins_dict[self.ident].items())[0] #todo: clean
         if hairpin_seq.count(self.sequence) != 1: ## mature seq must occur only once in hairpin
             print("Mature occurence in hairpin!! {} : {}".format(hairpin_seq, self.sequence))
         for polymiR_id, alternative_sequence in self.alternative_sequences.items():
@@ -305,7 +305,7 @@ def parse_fasta(fasta_file):
     d_fasta = {}
     with open(fasta_file, 'r') as fa:
         for l in fa:
-            if ">" in l:
+            if l.startswith('>'):
                 if seq != "":
                     d_fasta[seq_desc] = seq.replace("U", "T")
                 seq_desc = l.split('\n')[0].replace('>', '')
@@ -332,7 +332,7 @@ def bamFile_to_dict(bam):
     bam_dict = {}
     for alignment in bam:
         query_name = alignment.query_name
-        if bam_dict.has_key(query_name):
+        if query_name in bam_dict:
             bam_dict[query_name].append(alignment)
         else:
             bam_dict[query_name] = [alignment]
@@ -393,7 +393,7 @@ def fun_str_progress(infos_list, index, verbose=True):
 
 def save_obj(obj, path):
     with open(path, 'wb') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+        pickle.dump(obj, f, protocol=2)
         
 def load_obj(path):
     with open(path, 'rb') as f:
@@ -413,7 +413,7 @@ def write_isomiR_dist(bam_dict, sample_name, dir_results):
         if not(alignment.has_tag("XX")):
             reference_name = alignment.reference_name
             counts = float(alignment.get_tag("XC")) * float(alignment.get_tag("XW"))            
-            if not(iso_dict.has_key(reference_name)):
+            if reference_name not in iso_dict:
                 iso_dict[reference_name] = {"cano":0, "i3_cano":0, "i5_cano":0, "i3_trim":0, "i5_trim":0, "i3_tail":0, "i5_tail":0, "i3_TE":0, "i5_TE":0, "i3_trimtail":0, "i5_trimtail":0, "total":0}
             isotype = alignment.get_tag("IT")
             iso5, iso3 = isotype.split('[')[1].split(']')[0].split(',')

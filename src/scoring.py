@@ -7,7 +7,7 @@
 from pysam import AlignmentFile
 
 ## Personal library
-from essentials import *
+from .essentials import *
 
 def compute_isotype_score(isotype, WEIGHT5):
     def get_end_nb_modif(iso_end):

@@ -8,7 +8,7 @@
 from pysam import AlignmentFile
 from collections import Counter
 
-import essentials as ES
+from . import essentials as ES
 
 class annot: pass
 
@@ -35,14 +35,14 @@ def fill_annot_dict(annot_dict, alignment, ref):
     cross_mapp = remove_ref_from_cross_mapp(cross_mapp, ref)
     parent = '+'.join(parent.split('/'))
     counts = weight * copies
-    if annot_dict.has_key(ref):
+    if ref in annot_dict:
         if cross_mapp != '' and counts > 0:
-            if annot_dict[ref].cross_mapping.has_key(cross_mapp):
+            if cross_mapp in annot_dict[ref].cross_mapping:
                 annot_dict[ref].cross_mapping[cross_mapp] += counts
             else:
                 annot_dict[ref].cross_mapping[cross_mapp] = counts
         if parent != '' and counts > 0:
-            if annot_dict[ref].parents.has_key(parent):
+            if parent in annot_dict[ref].parents:
                 annot_dict[ref].parents[parent] += counts
             else:
                 annot_dict[ref].parents[parent] = counts
@@ -96,7 +96,7 @@ def compute_counts_miRs(bam_dict, collapse_table, sample_name_list):
         read = a.query_sequence
         weight = float(a.get_tag('XW'))
         fill_annot_dict(annot_dict, a, ref)
-        if not(counts.has_key(ref)):
+        if ref not in counts:
             counts[ref] = Counter()
         counts[ref] += retrieve_counts_per_samples(collapse_table, sample_name_list, read, weight)    
     return counts, annot_dict
@@ -114,7 +114,7 @@ def compute_counts_isomiRs(bam_dict, collapse_table, sample_name_list):
             read = a.query_sequence
             weight = float(a.get_tag('XW'))
             fill_annot_dict(annot_dict, a, iso_ref)
-            if not(counts.has_key(iso_ref)):
+            if iso_ref not in counts:
                 counts[iso_ref] = Counter()
             counts[iso_ref] += retrieve_counts_per_samples(collapse_table, sample_name_list, read, weight)
     return counts, annot_dict
@@ -131,7 +131,7 @@ def compute_counts_polymiRs(bam_dict, collapse_table, sample_name_list, d_Optimi
             read = a.query_sequence
             weight = float(a.get_tag('XW'))
             fill_annot_dict(annot_dict, a, ref)
-            if not(counts.has_key(ref)):
+            if ref not in counts:
                 counts[ref] = Counter()
             counts[ref] += retrieve_counts_per_samples(collapse_table, sample_name_list, read, weight)
     return counts, annot_dict
@@ -145,7 +145,7 @@ def compute_counts_miRs_and_polymiRs(bam_dict, collapse_table, sample_name_list)
         read = a.query_sequence
         weight = float(a.get_tag('XW'))
         fill_annot_dict(annot_dict, a, ref)
-        if not(counts.has_key(ref)):
+        if ref not in counts:
             counts[ref] = Counter()
         counts[ref] += retrieve_counts_per_samples(collapse_table, sample_name_list, read, weight)
     return counts, annot_dict
