@@ -31,38 +31,42 @@ class sequence:
         try:
             return self.times
         except KeyError:
-            print 'Key error in read collapser: no read {}'.format(self.name)
+            print('Key error in read collapser: no read {}'.format(self.name))
             return None
     def get_quality(self):
         average = map(lambda x: int(round(x/self.times)), self.qual)
-        return [str(unichr(char)) for char in average]
+        return [str(chr(char)) for char in average]
         
 def collapse(sample_name, in_dir, seq_table):
     fastq_file = "{}/{}.trimmed.fq".format(in_dir, sample_name)
-    with open(fastq_file, 'r') as handle:
-        for line in handle:
-            if line.startswith("@"):
-                name = line.split(' ')[0]
-                seq = handle.next().strip()
-                handle.next().strip()
-                qual = handle.next().strip()
+    with open(fastq_file, 'r') as f:
+        while True:
+            line = f.readline()
+            if not line : break
+            if line.startswith('@'):
+                name = line.split('\n')[0].split(' ')[0]
+                seq = f.readline()
+                seq = seq.split('\n')[0].split(' ')[0]
+                dummy_line = f.readline()
+                quality = f.readline()
+                quality = quality.split('\n')[0]
                 if seq in seq_table:
-                    seq_table[seq].update(qual, name)
+                    seq_table[seq].update(quality, name)
                 else:
-                    seq_table[seq] = sequence(qual, name)
+                    seq_table[seq] = sequence(quality, name)
 
 def write_output(out_file, seqs):
     idx = 0
     cpt = 0
-    with open(out_file, 'w') as handle:
+    with open(out_file, 'w') as out:
         for seq in seqs:
             idx += 1
             qual = "".join(seqs[seq].get_quality())
             name = seqs[seq].name
             counts = seqs[seq].times
             cpt += counts
-            ## FILTERING BASED ON COUNTS??
-            handle.write(("@{}_{}\n{}\n+\n{}\n").format(name, counts, seq, qual))
+            ## FILTERING BASED ON COUNTS POSSIBLE HERE
+            out.write(("@{}_{}\n{}\n+\n{}\n").format(name, counts, seq, qual))
     return ' > nb of reads before : {}\n > nb of unique reads after : {}'.format(cpt, idx)
 
 def collapse_sample(SAMPLE_NAME, input_directory, output_directory, seq_table = Counter()):

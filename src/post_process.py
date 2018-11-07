@@ -9,11 +9,11 @@ import sys, os
 from pysam import AlignmentFile
 
 # Personal libraries
-import annotate as ANNOT
-import scoring as SCORE
-import consistency as CONSIST
-import get_counts as ABUNDANCE
-from essentials import *
+from . import annotate as ANNOT
+from . import scoring as SCORE
+from . import consistency as CONSIST
+from . import get_counts as ABUNDANCE
+from .essentials import *
 
 ## POST-PROCESSING (for reads mapping on miRs only)
 # (Weighting, Isotyping, Genotype consistency, Abundance)

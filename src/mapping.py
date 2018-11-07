@@ -9,8 +9,8 @@
 import sys, os, subprocess
 
 # Personal libraries
-import filter_reads as CLEAN_SAM
-from essentials import *
+from . import filter_reads as CLEAN_SAM
+from .essentials import *
 
 def build_index(BOWTIE2_BUILD, index_path, fasta_file):
     command_line = ("{} -f {} {} -q".format(BOWTIE2_BUILD, fasta_file, index_path))

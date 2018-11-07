@@ -35,7 +35,7 @@ def process_annotations(table_annot, total):
                 name = "multiple"
             else:
                 name = parent.split('[')[0]
-            if parent_dict.has_key(name):
+            if name in parent_dict:
                 parent_dict[name] += counts
             else:
                 parent_dict[name] = counts
@@ -48,7 +48,7 @@ def process_annotations(table_annot, total):
             counts = float(cross_mapp.split('|')[1].split('reads')[0])
             cross_mapp_glob += counts
             name = cross_mapp.split('[')[0]
-            if cross_mapp_dict.has_key(name):
+            if name in cross_mapp_dict:
                 cross_mapp_dict[name] += counts
             else:
                 cross_mapp_dict[name] = counts
@@ -57,7 +57,7 @@ def process_annotations(table_annot, total):
 
 def write_abundances_table(table, sample_list, cat, path_dir):
     sample_list.sort()
-    ref_list = table.keys()
+    ref_list = list(table.keys())
     ref_list.sort()
     output = open('{}/../{}_abundances.txt'.format(path_dir, cat), 'w')
     header = ['REFERENCE']
@@ -85,7 +85,7 @@ def print_table(list_files, path_out, path_in):
     with open(path_out, 'w') as out:
         for f in list_files:
             with open(path_in + "/" + f, 'r') as in_f:
-                header = in_f.next()
+                header = in_f.readline()
                 if not(header_printed):
                     out.write(header)
                     header_printed = True
@@ -97,11 +97,11 @@ def print_iso_dist(list_files, path_out, path_in):
     iso_dict = {}
     for f in list_files:
         with open(path_in + "/" + f, 'r') as in_f:
-            h = in_f.next()
+            h = in_f.readline()
             for l in in_f:
                 elts = l.split('\t')
                 reference_name, cano, i3_cano, i5_cano, i3_trim, i5_trim, i3_tail, i5_tail, i3_TE, i5_TE, i3_trimtail, i5_trimtail, total = elts
-                if not(iso_dict.has_key(reference_name)):
+                if reference_name not in iso_dict:
                     iso_dict[reference_name] = {"cano":0, "i3_cano":0, "i5_cano":0, "i3_trim":0, "i5_trim":0, "i3_tail":0, "i5_tail":0, "i3_TE":0, "i5_TE":0, "i3_trimtail":0, "i5_trimtail":0, "total":0}
                 ## Add counts
                 iso_dict[reference_name]["cano"] += float(cano) * float(total) / 100.
@@ -116,7 +116,7 @@ def print_iso_dist(list_files, path_out, path_in):
                 iso_dict[reference_name]["i3_trimtail"] += float(i3_trimtail) * float(total) / 100.
                 iso_dict[reference_name]["i5_trimtail"] += float(i5_trimtail) * float(total) / 100.
                 iso_dict[reference_name]["total"] += float(total)
-    ref_list = iso_dict.keys()
+    ref_list = list(iso_dict.keys())
     ref_list.sort()
     with open(path_out, 'w') as out:
         out.write(header + "\n")
@@ -147,7 +147,7 @@ def print_tables(path_dir):
         table = {}
         for sample in sample_list:
             sample_file = open('{}/{}.{}_abundances.txt'.format(path_dir, cat, sample), 'r')
-            header = sample_file.next()
+            header = sample_file.readline()
             for l in sample_file:
                 elts = l.split('\n')[0].split('\t')
                 ref, counts = elts[:2]
@@ -155,7 +155,7 @@ def print_tables(path_dir):
                     parent, cross_mapp = elts[2:]
                 else:
                     parent, cross_mapp = "", ""
-                if table.has_key(ref):
+                if ref in table:
                     table[ref][sample] = counts
                     table[ref]["parents"].append(parent)
                     table[ref]["cross_mapps"].append(cross_mapp)
@@ -179,15 +179,15 @@ def print_tables(path_dir):
         
 ### MAIN
 if __name__ == "__main__":
-    print '\n ############################'
-    print ' #  OPTIMIR: Write summary  #'
-    print ' ############################'
+    print('\n#############################')
+    print('#  OPTIMIR: Summary tables  #')
+    print('#############################')
     start = time.time()
     if len(sys.argv) == 2:
         #directory containing all outputs
         path = sys.argv[1]
     else:
-        print "Error: Usage : python make_abundance_table.py /path/to/OptimiR/Results/dir"
+        print("Error: Usage : python make_abundance_table.py /path/to/OptimiR/Results/dir")
         exit(1)
     print_tables(path)
-        
+    print("OptimiR summary tables are available.")

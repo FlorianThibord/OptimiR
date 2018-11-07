@@ -11,8 +11,8 @@ import sys, os
 import subprocess
 
 # Personal libraries
-import read_collapser as Collapser
-from essentials import *
+from . import read_collapser as Collapser
+from .essentials import *
 
 ## Trim reads using cutadapt
 def trimming(FASTQ, SAMPLE_NAME, tmpdir_trim, CUTADAPT, ADAPT3, ADAPT5, READMIN, READMAX, BQTHRESH):

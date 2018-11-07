@@ -105,7 +105,7 @@ if __name__ == "__main__":
         
     except InputError as err:
         print("ERROR during library preparation: file {} does not exists. Check input filename and try again.\n".format(err.input_name))
-	sys.exit(4)
+        sys.exit(4)
     
     if OUTDIR[-1] == "/":
         OUTDIR = OUTDIR[:-1]
@@ -182,5 +182,5 @@ if __name__ == "__main__":
             subprocess.call("rm -r {}".format(tmpdir), shell=True)
         fun_str_progress([OUTDIR + "/OptimiR_Results/", end - start], "footer", VERBOSE)
     except Except_OS_Pipe as e:
-        print 'Error with system call: {}\nCheck that path to Bowtie2, Cutadapt, Samtools are well defined.\n'.format(e)
+        print('Error with system call: {}\nCheck that path to Bowtie2, Cutadapt, Samtools are well defined.\n'.format(e))
         exit(3)
