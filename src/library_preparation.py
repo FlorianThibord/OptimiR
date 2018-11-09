@@ -263,6 +263,8 @@ def prepare_library(BOWTIE2_BUILD, VCF, MATURES, HAIRPINS, GFF3, out_directory, 
         d_sequence, d_ident, d_coordinates, d_mat_coord = make_sequence_dict(MATURES, GFF3)
         if VCF_AVAIL:
             GENO_AVAIL, sample_list = make_polymiRs(d_sequence, VCF, d_mat_coord)
+        else:
+            sample_list = []
         make_hairpin_seqs(d_sequence, HAIRPINS, d_ident, d_coordinates)
         ## Write new library in fasta file
         write_fasta_from_Sequences(d_sequence, fasta_file)
@@ -288,7 +290,7 @@ if __name__ == "__main__":
     print(header)
 
     parser = ArgumentParser(description = "Script to prepare small RNA alignment library sequences that integrates genetic variants")
-    parser.add_argument("-v", "--vcf", dest = "VCF", default = None, required = True, help = "Full path of the input VCF file.")
+    parser.add_argument("-v", "--vcf", dest = "VCF", default = None, required = False, help = "Full path of the input VCF file.")
     parser.add_argument("-m", "--matures_fa", dest = "MATURES", default = None, required = True, help = "Full path of the input mature sequences fasta file.")
     parser.add_argument("-p", "--hairpins_fa", dest = "HAIRPINS", default = None, required = True, help = "Full path of the input hairpin sequences fasta file.")
     parser.add_argument("-g", "--gff3", dest = "GFF3", default = None, required = True, help = "Full path of the input gff3 coordinates file.")
