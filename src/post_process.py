@@ -19,7 +19,11 @@ from .essentials import *
 # (Weighting, Isotyping, Genotype consistency, Abundance)
 def post_process_main(tmpdir_mapping, tmpdir_postProcess, dir_results, collapse_table, sample_name, WEIGHT5, SCORE_THRESHOLD, INCONSISTENT_THRESHOLD, d_OptimiR_pickle_path, VCF_AVAILABLE, GENO_AVAILABLE, ANNOT_FILES, VERBOSE):
     # Load pickle object
-    d_OptimiR = load_obj(d_OptimiR_pickle_path)
+    try:
+        d_OptimiR = load_obj(d_OptimiR_pickle_path)
+    except ImportError: ## Happens when library_preparation is called ahead
+        sys.modules['essentials'] = sys.modules['src.essentials']
+        d_OptimiR = load_obj(d_OptimiR_pickle_path)
     # Create dict from bam file. keys=read_name values=alignments for that read
     bam = AlignmentFile('{}/{}.bam'.format(tmpdir_mapping, sample_name), 'rb')
     bam_dict = bamFile_to_dict(bam)

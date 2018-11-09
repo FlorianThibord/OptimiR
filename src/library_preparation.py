@@ -8,17 +8,26 @@
 #############################################
 
 ## Personal libraries
-from .essentials import *
-from . import mapping
+if __name__ == "__main__":
+    from essentials import *
+else:
+    from .essentials import *
 
 ## Other libraries
 import pickle
 import subprocess
-import os, sys
+import os, sys, subprocess
 
 ###########################################################
 ## Functions definitions 
 ###########################################################
+
+## Build alignment index with bowtie2-build
+def make_index(BOWTIE2_BUILD, index_path, fasta_file):
+    command_line = ("{} -f {} {} -q".format(BOWTIE2_BUILD, fasta_file, index_path))
+    ret_code = subprocess.call(command_line, shell=True)
+    if ret_code != 0:
+        raise Except_OS_Pipe('Bowtie2 index creation failed: command line = {}'.format(command_line))
 
 ## If sequence is mature, add coordinates in d_mat_coord, and append ID
 def add_in_d_mat_coord(d_mat_coord, sequence, ID):
@@ -266,7 +275,7 @@ def prepare_library(BOWTIE2_BUILD, VCF, MATURES, HAIRPINS, GFF3, out_directory, 
         save_obj(d_OptimiR, d_OptimiR_pickle_path)
         save_obj(lib_infos, lib_infos_pickle_path) # matures(mirs list) and vcf (variants list, samples and genotypes)
         ## build bowtie2 index
-        mapping.build_index(BOWTIE2_BUILD, index_path, fasta_file)
+        make_index(BOWTIE2_BUILD, index_path, fasta_file)
 
 ## Main Standalone
 if __name__ == "__main__":

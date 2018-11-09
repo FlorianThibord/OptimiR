@@ -12,12 +12,6 @@ import sys, os, subprocess
 from . import filter_reads as CLEAN_SAM
 from .essentials import *
 
-def build_index(BOWTIE2_BUILD, index_path, fasta_file):
-    command_line = ("{} -f {} {} -q".format(BOWTIE2_BUILD, fasta_file, index_path))
-    ret_code = subprocess.call(command_line, shell=True)
-    if ret_code != 0:
-        raise Except_OS_Pipe('Bowtie2 index creation failed: command line = {}'.format(command_line))
-
 def mapping(tmpdir_mapping, fastq_in, SAMPLE_NAME, BOWTIE2, SEEDLEN, ref_library, OptimiR_path, SAMTOOLS):
     file_out_mapping = '{}/{}.al.sam'.format(tmpdir_mapping, SAMPLE_NAME)
     # Remove potential previous files
