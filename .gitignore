@@ -2,3 +2,4 @@ src/*pyc
 src/*~
 ./*~
 ./Results
+src/__pycache__
