@@ -62,12 +62,13 @@ All the outputs are in tsv format, and easy to process for downstream analyses.
 
 First column contains miRNA ids, second column contains sample's counts.
 For each sample, 4 abundance files are generated:
- - `miRs_and_polymiRs_abundances` : counts gathered by each miRNA. PolymiRs have counts detailed on each sequence (integrating reference/alternative allele). The sequences that integrate an alternative allele is written as follow : miR_name + '_' + rsID. For example the polymiR hsa-miR-4433b-3p integrating the alternative allele for `rs12473206` has its counts accessible with the id `hsa-miR-4433b_rs12473206`, while counts gathered by the sequence integrating the reference allele are on the line with the id `hsa-miR-4433b-3p`.
+ - `miRs_and_polymiRs_abundances` : counts gathered by each miRNA. PolymiRs have counts detailed on each sequence (integrating reference/alternative allele). The sequences that integrate an alternative allele is written as follow : miR_name + `'_'` + rsID. For example the polymiR hsa-miR-4433b-3p integrating the alternative allele for `rs12473206` has its counts accessible with the id `hsa-miR-4433b_rs12473206`, while counts gathered by the sequence integrating the reference allele are on the line with the id `hsa-miR-4433b-3p`.
  - `miRs_merged_abundances` : Same as above, except that counts of each polymiRs are merged under a single id. For example, counts gathered by `hsa-miR-4433b-3p` and `hsa-miR-4433b-3p_rs12473206` are summed and available with the id `hsa-miR-4433b-3p`.
  - `polymiRs_specific_abundances` : same as `miRs_and_polymiRs_abundances` except that only polymiRs are presented in this table.
- - `isomiRs_specific_abundances` : counts gathered by each isomiR. Each isomiR is represented according to the "isotype" format (see below).
+ - `isomiRs_specific_abundances` : counts gathered by each isomiR. Each isomiR is represented according to the *isotype* format (see below).
 ```
 ISOTYPE FORMAT: miRNA-ID~[5'end modifications, 3'end modifications]
+--------------
 Modifications description:
  +N : templated tailing with nucleotide N
  +n : non templated tailing with nucleotide N
@@ -107,30 +108,30 @@ hsa-let-7a-5p	471517	hsa-let-7a-2[0.02%]/multiple[99.69%]/hsa-let-7a-3[0.18%]/hs
 hsa-let-7b-5p	3842888	hsa-let-7b[100.00%]								hsa-let-7c-5p+hsa-let-7a-5p[2278(0.06%)]
 hsa-let-7c-5p	51910	hsa-let-7c[100.00%]								hsa-let-7a-5p[27534(53.04%)]/hsa-let-7a-5p+hsa-let-7b-5p[2278(4.39%)]
 hsa-let-7f-5p	439810	hsa-let-7f-1[0.36%]/hsa-let-7f-2[24.53%]/multiple[75.11%]	
+```
+####### Expressed_hairpins format: `potential-hairpin-id[percentage of reads with templated tailing matching potential-hairpin-id]`
 
-Expressed_hairpins format: potential-hairpin-id[percentage of reads with templated tailing matching potential-hairpin-id]
--------------------------
 If a miRNA has only one hairpin from which it originate, then it will always have 100% of its reads originating
-from it. Ex:miRNA-hairpin-id[100%]
+from it. Ex: `miRNA-hairpin-id[100%]`
 If a miRNA has more than one potential hairpin, each hairpin with matching templated tailing is reported, with
 the percentage of total aligned reads reported in brackets.
-If several hairpins are reported, they are separated with a '/' symbol.
+If several hairpins are reported, they are separated with a `'/'` symbol.
 For alignments where the parental hairpin cannot be distinguished using templated tailing, these are reported
-as 'multiple'.
-In the example, reads aligned on hsa-let-7f-5p have 0.36% of aligned reads that are potentially originating
-from the hairpin hsa-let-7f-1, 24.53% from hsa-let-7f-2, and the remaining 75.11% could originate from any of the
+as `'multiple'`.
+In the example, reads aligned on `hsa-let-7f-5p` have 0.36% of aligned reads that are potentially originating
+from the hairpin `hsa-let-7f-1`, 24.53% from `hsa-let-7f-2`, and the remaining 75.11% could originate from any of these
 two hairpins.
 
-Remaining_ambiguous format: mature-id[number_of_reads_involved(percentage_of_reads_involved)]
---------------------------
+####### Remaining_ambiguous format: `mature-id[number_of_reads_involved(percentage_of_reads_involved)]`
+
 We report here other matures miRNA on which reads ambiguously aligned. These alignments could not be resolved
 using OptimiR's scoring algorithm to determine the most probable alignment.
-If a read cross mapped on more than one other miRNA, then they are all reported and separated with a '+' symbol.
-In the example, 5.84% of reads aligned aligned on hsa-let-7a-5p (which amount to 27,534 reads) also mapped
-on hsa-let-7c-5p. And 2,278 reads (or 0.48% of reads aligned to hsa-let-7a-5p) aligned simulteanously
-to hsa-let-7a-5p, hsa-let-7b-5p and hsa-let-7c-5p.
-This happens a lot to reads mapping on let-7 mature miRNAs, because their sequences are very similar.
-```
+If a read cross mapped on more than one other miRNA, then they are all reported and separated with a `'+'` symbol.
+In the example, 5.84% of reads aligned aligned on `hsa-let-7a-5p` (which amount to 27,534 reads) also mapped
+on `hsa-let-7c-5p`. And 2,278 reads (or 0.48% of reads aligned to `hsa-let-7a-5p`) aligned simulteanously
+to `hsa-let-7a-5p`, `hsa-let-7b-5p` and `hsa-let-7c-5p`.
+This happens a lot to reads mapping on `let-7` mature miRNAs, because their sequences are very similar.
+
 
 ### Summary Files
 
