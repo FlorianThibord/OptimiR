@@ -109,7 +109,7 @@ hsa-let-7b-5p	3842888	hsa-let-7b[100.00%]								hsa-let-7c-5p+hsa-let-7a-5p[227
 hsa-let-7c-5p	51910	hsa-let-7c[100.00%]								hsa-let-7a-5p[27534(53.04%)]/hsa-let-7a-5p+hsa-let-7b-5p[2278(4.39%)]
 hsa-let-7f-5p	439810	hsa-let-7f-1[0.36%]/hsa-let-7f-2[24.53%]/multiple[75.11%]	
 ```
-####### Expressed_hairpins format: `potential-hairpin-id[percentage of reads with templated tailing matching potential-hairpin-id]`
+###### Expressed_hairpins format: `potential-hairpin-id[percentage of reads with templated tailing matching potential-hairpin-id]`
 
 If a miRNA has only one hairpin from which it originate, then it will always have 100% of its reads originating
 from it. Ex: `miRNA-hairpin-id[100%]`
@@ -122,7 +122,7 @@ In the example, reads aligned on `hsa-let-7f-5p` have 0.36% of aligned reads tha
 from the hairpin `hsa-let-7f-1`, 24.53% from `hsa-let-7f-2`, and the remaining 75.11% could originate from any of these
 two hairpins.
 
-####### Remaining_ambiguous format: `mature-id[number_of_reads_involved(percentage_of_reads_involved)]`
+###### Remaining_ambiguous format: `mature-id[number_of_reads_involved(percentage_of_reads_involved)]`
 
 We report here other matures miRNA on which reads ambiguously aligned. These alignments could not be resolved
 using OptimiR's scoring algorithm to determine the most probable alignment.
