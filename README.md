@@ -192,6 +192,9 @@ optional arguments:
                         for polymiRs_table, 'i' for consistency_table, 'c' for
                         remaining_ambiguous, 's' for isomiRs_dist. Ex: '--
                         annot hpics' (default) will produce all of them
+  --gff			Add this option to generate results in mirGFF3 format
+  --vcf			Add this option to generate genotypes inferred by OptimiR
+  			in VCF format
   --adapt3 ADAPT3       Define the 3' adaptor sequence (default is NEB &
                         ILLUMINA: AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -a
                         TGGAATTCTCGGGTGCCAAGG -> hack: use -a to add adapter
@@ -226,3 +229,10 @@ optional arguments:
                         Provide path to the bowtie2 index builder binary
   --samtools SAMTOOLS   Provide path to the samtools binary
 ```
+
+### UPDATES
+
+ - 02/03/19 :
+   - Supports outputs in mirGFF3 format (see the [mirtop/mirGFF3 GitHub page](https://github.com/miRTop/mirGFF3) for more details on this format and the mirtop project)
+   - Supports outputs in VCF format summarizing the genotypes inferred by OptimiR
+

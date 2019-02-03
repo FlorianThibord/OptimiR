@@ -48,6 +48,7 @@ if __name__ == "__main__":
     ## Optionnal arguments : rmTempFiles, annot, adapt 3', adapt 5', readMin, readMax, bqTresh, trimAgain
     parser.add_argument("--rmTempFiles", dest="RMTEMP", default=False, required=False, action='store_true', help="Add this option to remove temporary files (trimmed fastq, collapsed fastq, mapped reads, annotated bams")
     parser.add_argument("--annot", dest="ANNOT_FILES", default="hpics", required=False, help="Control which annotation file is produced by adding corresponding letter : 'h' for expressed_hairpins, 'p' for polymiRs_table, 'i' for consistency_table, 'c' for remaining_ambiguous, 's' for isomiRs_dist. Ex: '--annot hpics' (default) will produce all of them")
+    parser.add_argument("--gff", dest="WRITE_GFF", default=False, required=False, action='store_true', help="Add this option to generate results in mirGFF3 format")
     parser.add_argument("--adapt3", dest="ADAPT3", default="AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -a TGGAATTCTCGGGTGCCAAGG", required=False, help="Define the 3' adaptor sequence (default is NEB & ILLUMINA: AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -a TGGAATTCTCGGGTGCCAAGG -> hack: use -a to add adapter sequences")
     parser.add_argument("--adapt5", dest="ADAPT5", default="ATCTACACGTTCAGAGTTCTACAGTCCGACGATC", required=False, help="Define the 5' adaptor sequence (default is NEB: ATCTACACGTTCAGAGTTCTACAGTCCGACGATC")
     parser.add_argument("--readMin", dest="READMIN", type=int, default=15, required=False, help="Define the minimum read length defined with option -m in cutadapt (default: 15)")
@@ -78,6 +79,7 @@ if __name__ == "__main__":
     INCONSISTENT_THRESHOLD = args.INCONSISTENT_THRESHOLD
     RMTEMP = args.RMTEMP
     ANNOT_FILES = args.ANNOT_FILES
+    WRITE_GFF = args.WRITE_GFF
     ADAPT3 = args.ADAPT3
     ADAPT5 = args.ADAPT5    
     READMIN = args.READMIN
@@ -174,7 +176,8 @@ if __name__ == "__main__":
         subprocess.call("mkdir -p {}".format(tmpdir_postProcess), shell=True)
         dir_results = OUTDIR + "/OptimiR_Results"
         subprocess.call("mkdir -p {}".format(dir_results), shell=True)
-        post_process.post_process_main(tmpdir_mapping, tmpdir_postProcess, dir_results, collapse_table, sample_name, WEIGHT5, SCORE_THRESHOLD, INCONSISTENT_THRESHOLD, d_OptimiR_pickle_path, VCF_AVAILABLE, GENO_AVAILABLE, ANNOT_FILES, VERBOSE)
+        sourceDB = MATURES.split('/')[-1].split('.')[0]
+        post_process.post_process_main(tmpdir_mapping, tmpdir_postProcess, dir_results, collapse_table, sample_name, WEIGHT5, SCORE_THRESHOLD, INCONSISTENT_THRESHOLD, d_OptimiR_pickle_path, VCF_AVAILABLE, GENO_AVAILABLE, ANNOT_FILES, VERBOSE, WRITE_GFF, sourceDB)
         pp_time = time.time()
         fun_str_progress([pp_time - mapping_time], "postproc", VERBOSE)
         end = time.time()

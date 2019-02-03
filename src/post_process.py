@@ -17,7 +17,7 @@ from .essentials import *
 
 ## POST-PROCESSING (for reads mapping on miRs only)
 # (Weighting, Isotyping, Genotype consistency, Abundance)
-def post_process_main(tmpdir_mapping, tmpdir_postProcess, dir_results, collapse_table, sample_name, WEIGHT5, SCORE_THRESHOLD, INCONSISTENT_THRESHOLD, d_OptimiR_pickle_path, VCF_AVAILABLE, GENO_AVAILABLE, ANNOT_FILES, VERBOSE):
+def post_process_main(tmpdir_mapping, tmpdir_postProcess, dir_results, collapse_table, sample_name, WEIGHT5, SCORE_THRESHOLD, INCONSISTENT_THRESHOLD, d_OptimiR_pickle_path, VCF_AVAILABLE, GENO_AVAILABLE, ANNOT_FILES, VERBOSE, WRITE_GFF, sourceDB):
     # Load pickle object
     try:
         d_OptimiR = load_obj(d_OptimiR_pickle_path)
@@ -56,7 +56,7 @@ def post_process_main(tmpdir_mapping, tmpdir_postProcess, dir_results, collapse_
     bam_out.close()
     ## Write abundances and annotation files
     fun_str_progress([], "outputs", VERBOSE)
-    ABUNDANCE.compute_abundances(bam_dict, collapse_table, [sample_name], dir_results, '{}_abundances.txt'.format(sample_name), d_OptimiR, ANNOT_FILES)
+    ABUNDANCE.compute_abundances(bam_dict, collapse_table, [sample_name], dir_results, '{}_abundances.txt'.format(sample_name), d_OptimiR, ANNOT_FILES, WRITE_GFF, sourceDB)
     ## Write polymiRs outputs (inconsistents + polymiR tables)
     CONSIST.write_polymiRs_outputs(bam_dict, bam, collapse_table, sample_name, dir_results, d_OptimiR, INCONSISTENT_THRESHOLD, ANNOT_FILES)
     if "s" in ANNOT_FILES:

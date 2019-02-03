@@ -15,7 +15,7 @@ def get_sample_list(path_dir):
     categories = set()
     samples_name = set()
     for f in file_list:
-        if not('.annot' in f) and not('inconsistent' in f):
+        if not('.annot' in f) and not('inconsistents.' in f) and not('.gff3' in f):
             cat, name = f.split('_abundances.txt')[0].split('.')
             categories.add(cat)
             samples_name.add(name)
@@ -79,7 +79,6 @@ def write_abundances_table(table, sample_list, cat, path_dir):
         output.write('\t'.join(l) + "\n")
     output.close()
 
-
 def print_table(list_files, path_out, path_in):
     header_printed = False
     with open(path_out, 'w') as out:
@@ -140,7 +139,83 @@ def print_iso_dist(list_files, path_out, path_in):
             l = "\t".join([reference_name, str(cano * 100. / total), str(i3_cano * 100. / total), str(i5_cano * 100. / total), str(i3_trim * 100. / total), str(i5_trim * 100. / total), str(i3_tail * 100. / total), str(i5_tail * 100. / total), str(i3_TE * 100. / total), str(i5_TE * 100. / total), str(i3_trimtail * 100. / total), str(i5_trimtail * 100. / total), str(total)]) + "\n"
             out.write(l)
 
-    
+## GFF merge (todo: clean & comment, manage filter for variants)
+def print_gff(path_dir):
+    if path_dir.endswith('/'):
+        path_dir = path_dir[:-1]
+    out_filename = '{}/../results.gff3'.format(path_dir)
+    list_files = [f for f in os.listdir(path_dir) if ".gff3" in f]
+    d = {}
+    header = []
+    samples = []
+    d_expressions = {} ## iso -> sample -> expr
+    d_expressions_opt = {} ## weighted expression by optimiR
+    for file_in in list_files:
+        with open(path_dir + "/" + file_in, 'r') as f:
+            lines = f.readlines()
+            header = [lines[0], lines[1]]
+            sample_name = lines[2].split('\n')[0].split(': ')[1]
+            samples.append(sample_name)
+            for l in lines[4:]:
+                elts = l.split('\n')[0].split('\t')
+                attributes = elts[-1].split(';')
+                d_attr = {}
+                d_attr["line"] = "\t".join(elts[:8])
+                for a in attributes:
+                    attr_name, attr_val = a.split("=")
+                    d_attr[attr_name] = attr_val
+                entry_id = d_attr["Name"]+"_"+elts[3]+"_"+elts[4]+"_"+elts[5]+"_"+d_attr["UID"]
+                if not(entry_id in d):
+                    d[entry_id] = d_attr
+                for attr,value in d[entry_id].items():
+                    if attr == "Expression":
+                        if entry_id not in d_expressions:
+                            d_expressions[entry_id] = {}
+                        d_expressions[entry_id][sample_name] = d_attr[attr]
+                    elif attr == "Expression_OptimiR":
+                        if entry_id not in d_expressions_opt:
+                            d_expressions_opt[entry_id] = {}
+                        d_expressions_opt[entry_id][sample_name] = d_attr[attr]
+                    else:
+                        if value != d_attr[attr]:
+                            print("Difference with {}: {} vs {}".format(entry_id, value, d_attr[attr]))
+    with open(out_filename, 'w') as out:
+        samples.sort()
+        header = "{}{}## COLDATA: {}\n## Processed with OptimiR.\n##\n".format(header[0], header[1], ','.join(samples))
+        out.write(header)
+        keylist = d.keys()
+        keylist.sort()
+        for key in keylist:
+            entry = d[key]
+            attr_list = ["UID", "Read","Parent","Name","Variant","Change","Cigar","Alias","Expression","Expression_OptimiR","Filter","Hits"]
+            final_attr = []
+            for attr in attr_list:
+                if attr == "Expression":
+                    expr_list = []
+                    for sample_name in samples:
+                        try:
+                            expr_list.append(str(int(float(d_expressions[key][sample_name]))))
+                        except KeyError:
+                            expr_list.append("0")
+                    final_attr.append("Expression={}".format(",".join(expr_list)))
+                elif attr == "Expression_OptimiR":
+                    expr_list = []
+                    for sample_name in samples:
+                        try:
+                            expr_list.append(d_expressions_opt[key][sample_name])
+                        except KeyError:
+                            expr_list.append("0.0")
+                    final_attr.append("Expression_OptimiR={}".format(",".join(expr_list)))
+                else:
+                    try:
+                        value = entry[attr]
+                        final_attr.append("{}={}".format(attr,value))
+                    except KeyError:
+                        pass
+            line = entry["line"] + "\t" + ";".join(final_attr) + "\n"
+            out.write(line)
+    return d_expressions
+            
 def print_tables(path_dir):
     sample_list, categories = get_sample_list(path_dir)
     for cat in categories:
@@ -176,6 +251,7 @@ def print_tables(path_dir):
     path_iso_dist = '{}/../isomiRs_dist.annot'.format(path_dir)
     if list_iso_files != []:
         print_iso_dist(list_iso_files, path_iso_dist, path_dir)
+    print_gff(path_dir)
         
 ### MAIN
 if __name__ == "__main__":
@@ -187,7 +263,7 @@ if __name__ == "__main__":
         #directory containing all outputs
         path = sys.argv[1]
     else:
-        print("Error: Usage : python make_abundance_table.py /path/to/OptimiR/Results/dir")
+        print("Error: Usage : ./OPTIMIR_SUMMARY /path/to/OptimiR/Results/dir")
         exit(1)
     print_tables(path)
     print("OptimiR summary tables are available.")
