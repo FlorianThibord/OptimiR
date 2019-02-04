@@ -269,18 +269,20 @@ def make_id(seq):
     return uid
 
 ##########################################
-## GFF DEFINITIONS (todo: clean & comment)
+## GFF DEFINITIONS (todo: ugly code > clean & comment)
 ##########################################
 def get_cigar(seq,d_snv,tail5,tail3,trim5):
     cigar = tail5.upper()
     count = 0
-    for i in range(len(tail5), len(seq) - len(tail3) - len(tail5)):
+    for i in range(trim5 + 1, len(seq) - len(tail3) +  trim5 - len(tail5) + 1):
         if i in d_snv:
             change = d_snv[i]
-            if count > 0:
-                cigar += (str(count) + "M")
-                count = 0
-            cigar += change
+            if change == seq[i - 1 - trim5 + len(tail5)]:
+                if count > 0:
+                    cigar += (str(count) + "M")
+                    count = 0 
+                cigar += change
+            else: count += 1
         else:
             count += 1
     if count > 0:
@@ -288,8 +290,9 @@ def get_cigar(seq,d_snv,tail5,tail3,trim5):
     cigar += tail3.upper()
     return cigar
     
-def process_iso(IT, dO, seq):
+def process_iso(IT, dO, seq, reference_name):
     iso5, iso3 = IT.split('[')[1].split(']')[0].split(',')
+    snvs_in_ref = reference_name.split('_')[1:] if "_" in reference_name else []
     variants = []
     changes = []
     start = 1
@@ -343,26 +346,27 @@ def process_iso(IT, dO, seq):
     snv_list = dO.variants
     d_snv = {}
     for snv in dO.variants:
-        pos = snv.pos_in_rna + 1
-        ref = snv.ref
-        alt = snv.alt
-        d_snv[pos] = alt
-        var = ""
-        if 2 <= pos <= 7:
-            var = "iso_snv_seed"
-        elif 8 == pos :
-            var = "iso_snv_central_offset"
-        elif 9 <= pos <= 12:
-            var = "iso_snv_central"
-        elif 13 <= pos <= 17:
-            var = "iso_snv_central_supp"
-        else:
-            var = "iso_snv"
-        variants.append("{}:{}".format(var, snv.rsID))
-        if len(ref) != 1 or len(alt) != 1:
-            changes.append("iso_snv:indel")
-        else:
-            changes.append("iso_snv:{}{}{}".format(pos, ref, alt))
+        if snv.rsID in snvs_in_ref:
+            pos = snv.pos_in_rna + 1
+            ref = snv.ref
+            alt = snv.alt
+            d_snv[pos] = alt
+            var = ""
+            if 2 <= pos <= 7:
+                var = "iso_snv_seed"
+            elif 8 == pos :
+                var = "iso_snv_central_offset"
+            elif 9 <= pos <= 12:
+                var = "iso_snv_central"
+            elif 13 <= pos <= 17:
+                var = "iso_snv_central_supp"
+            else:
+                var = "iso_snv"
+            variants.append("{}:{}".format(var, snv.rsID))
+            if len(ref) != 1 or len(alt) != 1:
+                changes.append("iso_snv:indel")
+            else:
+                changes.append("iso_snv:{}{}{}".format(pos, ref, alt))
     if len(variants) > 0:
         variants = "Variant={}".format(",".join(variants))
     else:
@@ -385,22 +389,75 @@ def get_hits(alignments):
         else:
             hits += 1
     return str(hits)
-                
+
+## Todo : Add details about OptimiR Trimming + Alignment Step + VCF path/name when used
 def get_gff_header(database, sample_name):
+    if database == "hsa_matures_miRBase_v21":
+        database = "miRBasev21 doi:10.25504/fairsharing.hmgte8"
+    elif database == "hsa_matures_miRBase_v22":
+        database = "miRBasev22 doi:10.25504/fairsharing.hmgte8"
+    ## else : custom database
     return "## GFF3 adapted for miRNA sequencing data. VERSION 1.1\n## Source: {}\n## COLDATA: {}\n## Processed with OptimiR.\n".format(database, sample_name)
+
+## Essentially remove polymiRs ambiguous that were discarded due to scoring instead of genotype consistency. Happens when variants are localised on extremities and are soft clipped.
+## If polymiR in list (at least 2 sequences distinguished only by the presence of variant(s)), first discard the ones with inconsistent geno (if available), then keep the alignment with best score
+## If same score and no geno? only keep ref for GFF
+def clean_alignments(alignments):
+    alignments_out = []
+    ref_set = {}
+    polymiRs = {} # dict in case one read aligns on several polymiRs (unlikely but with miRs you never know > actually we know, with miR-1269a/b)
+    for a in alignments:
+        ## If reference name is present twice, then one has rsID and one has a better score
+        ref = a.reference_name.split('_')[0]
+        if ref in ref_set: ## then polymiR
+            if a.has_tag('GC'):
+                if a.get_tag('GC') == "Genotype_INVALID":
+                    continue
+            if ref in polymiRs:
+                polymiRs[ref].append((a, int(a.get_tag('SC'))))
+            else:
+                polymiRs[ref] = []
+                polymiRs[ref].append((ref_set[ref], int(ref_set[ref].get_tag('SC'))))
+                polymiRs[ref].append((a, int(a.get_tag('SC'))))
+        else:
+            ref_set[ref] = a
+    for ref_name, p_l in polymiRs.items():
+        p_l = sorted(p_l, key=lambda x: x[1]) ## ascending order
+        best_score = p_l[0][1]
+        found_ref = False
+        for p in p_l:
+            if not("_" in p[0].reference_name) and (p[1] == best_score):
+                found_ref = True
+                alignments_out.append(p[0])
+        if not(found_ref): ## if reference is not found with best score, only take first
+            alignments_out.append(p_l[0][0])
+    ## Add the non-polymiRs
+    for ref, a in ref_set.items():
+        if ref not in polymiRs:
+            alignments_out.append(a)
     
+    print("{}, {}".format([a.reference_name for a in alignments], [a.reference_name for a in alignments_out]))
+    return alignments_out
+    
+## Todo: rewrite and cleanup
 def write_gff(bam_dict, collapse_table, sample_name, d_OptimiR, out_fn, sourceDB):
     alignments = [a for alignments in bam_dict.values() for a in alignments]
     lines = []
     with open(out_fn, "w") as out:
         out.write(get_gff_header(sourceDB, sample_name))
         for alignments in bam_dict.values():
+            alignments = clean_alignments(alignments) 
             hits = "Hits={}".format(get_hits(alignments))
             ### For each alignment
             for a in alignments:
                 seqid = a.reference_name.split('_')[0] ## without rsID
-                variant, changes, start, end, cigar, is_cano = process_iso(a.get_tag('IT'), d_OptimiR[a.reference_name], a.seq)
-                source = sourceDB ## retrieve from provided filename
+                variant, changes, start, end, cigar, is_cano = process_iso(a.get_tag('IT'), d_OptimiR[a.reference_name], a.seq, a.reference_name)
+                if sourceDB == "hsa_matures_miRBase_v21":
+                    source = "mirbase_21"
+                elif sourceDB == "hsa_matures_miRBase_v22":
+                    source = "mirbase_22"
+                else:
+                    source = sourceDB ## retrieve from provided filename
                 if is_cano:
                     typ = "ref_miRNA"
                 else:
@@ -420,7 +477,7 @@ def write_gff(bam_dict, collapse_table, sample_name, d_OptimiR, out_fn, sourceDB
                     if tag != "DISCARDED_SOFT_CLIPPED_VARIANT" and tag != "DISCARDED_GENO":
                         filtr = "REJECT," + tag
                     else:
-                        filtr = "PASS,CAREFUL_GENO"
+                        filtr = "DELETE_GENO"
                 else:
                     filtr = "PASS"
                 filtr = "Filter={}".format(filtr)
@@ -431,12 +488,11 @@ def write_gff(bam_dict, collapse_table, sample_name, d_OptimiR, out_fn, sourceDB
                 else:
                     attributes = ";".join([UID,read,parent,name,variant,changes,cigar,alias,expression,expression_optimir,filtr, hits])
                 line = "\t".join([seqid, source, typ, str(start), str(end), score, strand, phase, attributes])
-                if filtr != "Filter=REJECT,DISCARDED_SOFT_CLIPPED_VARIANT" or filtr != "Filter=REJECT,DISCARDED_GENO":
+                if filtr != "Filter=DELETE_GENO":
                     lines.append(line)
         lines.sort()
         for line in lines:
             out.write(line + "\n")
-
             
 def compute_abundances(bam_dict, collapse_table, sample_name_list, out_dir, out_filename, d_OptimiR, ANNOT_FILES, WRITE_GFF, sourceDB):
     counts, annot = compute_counts_miRs(bam_dict, collapse_table, sample_name_list)
