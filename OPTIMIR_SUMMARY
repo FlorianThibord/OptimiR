@@ -251,7 +251,8 @@ def print_tables(path_dir):
     path_iso_dist = '{}/../isomiRs_dist.annot'.format(path_dir)
     if list_iso_files != []:
         print_iso_dist(list_iso_files, path_iso_dist, path_dir)
-    print_gff(path_dir)
+    if len([f for f in os.listdir(path_dir) if ".gff3" in f]) > 0:
+        print_gff(path_dir)
         
 ### MAIN
 if __name__ == "__main__":
