@@ -140,6 +140,7 @@ def write_polymiRs_outputs(bam_dict, bam, collapse_table, sample_name, dir_resul
     out_inconsistents_table = dir_results + '/' + "consistency_table." + sample_name + ".annot"
     out_polymiRs_table = dir_results + '/' + "polymiRs_table." + sample_name + ".annot"
     out_inconsistent = dir_results + '/' + "inconsistents." + sample_name + ".sam"
+    out_vcf = dir_results + '/' + "geno." + sample_name + ".vcf"
     bam_inconsistents = {}
     polymiRs = [key for key, obj in d_OptimiR.items() if len(obj.polymiR_list) > 0]
     poly_dict_consist = {} ## [mature name] -> (consistents, inconsistents)
@@ -215,3 +216,33 @@ def write_polymiRs_outputs(bam_dict, bam, collapse_table, sample_name, dir_resul
                         list_genos = "UNAVAILABLE"
                     l = "{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(sample_name, ref_name, list_rsID, list_genos, counts_ref, counts_alt, rate_alt)
                     out.write(l)
+    if "WRITE_VCF":
+        ## Todo: move, clean, improve
+        with open(out_vcf, 'w') as out:
+            header= '##fileformat=VCFv4.1\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n##FORMAT=<ID=XC,Number=2,Type=Float,Description="Counts received on allele ref, Counts received on allele alt">\n##INFO=<ID=miRNA,Number=1,Type=String,Description="mature miRNA (or polymiR) from which genotype has been inferred (using expression of both alleles)">\n##INFO=<ID=MIR_POS,Number=1,Type=Integer,Description="SNP position in mature miR sequence">\n##QUAL=Based on expression rate of each allele. If homozygous, then (homozygous allele rate) - (opposite allele rate * 10) (minimum limit of 0); if heterozygous, then rate of the least expressed allele * 2. A good quality should be close to 1.\n##FILTER=<ID=.,Description="The genotype depends on the expression of each allele of the polymiR, it is difficult to validate a genotype from such data.">\n##Generated with OptimiR: based on the number of reads received by each polymiR allele. The decision is base on the INCONSISTENT_RATE_THRESHOLD defined by the user (default:0.01, which means that an allele must gather at least 1% of the reads aligned to the polymiR)\n#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	{}\n'.format(sample_name)
+            out.write(header)
+            for ref_name, (counts_ref, counts_alt) in poly_dict_align.items():
+                total = counts_ref + counts_alt
+                if total > 0:
+                    rate_alt = float(counts_alt) / float(total)
+                    variant_list = d_OptimiR[ref_name].variants
+                    for v in variant_list:
+                        infos = "miRNA={};MIR_POS={}".format(ref_name, int(v.pos_in_rna) + 1)
+                        formt = "GT:COUNTS"
+                        ## geno decided on rate alt
+                        ## if rate_alt > INCONSISTENT RATE THRESHOLD and 1 - rate_alt > INCONSISTENT RATE then hetero else if rate_alt > INCONSISTENT : homo_alt else : homo_ref
+                        if rate_alt >= INCONSISTENT_RATE_THRESHOLD and (1-rate_alt) >= INCONSISTENT_RATE_THRESHOLD:
+                            geno = "1/0"
+                            qual = rate_alt * 2 if rate_alt < 0.5 else (1-rate_alt) *2
+                        elif rate_alt >= INCONSISTENT_RATE_THRESHOLD:
+                            geno = "1/1"
+                            qual = 1 - (1-rate_alt)*10
+                        else:
+                            geno = "0/0"
+                            qual = 1 - rate_alt*20
+                        counts = "{},{}".format(counts_ref, counts_alt)
+                        geno_s = "{}:{}".format(geno, counts)
+                        qual = "."
+                        filtr = "."
+                        line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(v.chromosome, v.pos, v.rsID, v.ref, v.alt, qual, filtr, infos, formt, geno_s)
+                        out.write(line)

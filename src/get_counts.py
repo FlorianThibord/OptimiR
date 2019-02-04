@@ -435,8 +435,6 @@ def clean_alignments(alignments):
     for ref, a in ref_set.items():
         if ref not in polymiRs:
             alignments_out.append(a)
-    
-    print("{}, {}".format([a.reference_name for a in alignments], [a.reference_name for a in alignments_out]))
     return alignments_out
     
 ## Todo: rewrite and cleanup
