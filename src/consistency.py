@@ -136,7 +136,7 @@ def compute_genotype_consistency(bam_dict, d_OptimiR, sample_name):
                     if not(alignment.has_tag("XX")):
                         alignment.set_tag("XX", "DISCARDED_GENO")
 
-def write_polymiRs_outputs(bam_dict, bam, collapse_table, sample_name, dir_results, d_OptimiR, INCONSISTENT_RATE_THRESHOLD, ANNOT_FILES):
+def write_polymiRs_outputs(bam_dict, bam, collapse_table, sample_name, dir_results, d_OptimiR, INCONSISTENT_RATE_THRESHOLD, ANNOT_FILES, WRITE_VCF):
     out_inconsistents_table = dir_results + '/' + "consistency_table." + sample_name + ".annot"
     out_polymiRs_table = dir_results + '/' + "polymiRs_table." + sample_name + ".annot"
     out_inconsistent = dir_results + '/' + "inconsistents." + sample_name + ".sam"
