@@ -15,7 +15,7 @@ def get_sample_list(path_dir):
     categories = set()
     samples_name = set()
     for f in file_list:
-        if not('.annot' in f) and not('inconsistents.' in f) and not('.gff3' in f):
+        if not('.annot' in f) and not('inconsistents.' in f) and not('.gff3' in f) and not('.vcf' in f):
             cat, name = f.split('_abundances.txt')[0].split('.')
             categories.add(cat)
             samples_name.add(name)
@@ -215,7 +215,46 @@ def print_gff(path_dir):
             line = entry["line"] + "\t" + ";".join(final_attr) + "\n"
             out.write(line)
     return d_expressions
+
+def get_vcf_header(sample_list):
+    return '##fileformat=VCFv4.1\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype inferred">\n##FORMAT=<ID=XC,Number=2,Type=Float,Description="Counts received on allele ref, Counts received on allele alt">\n##INFO=<ID=miR,Number=1,Type=String,Description="mature miRNA (or polymiR) from which genotype has been inferred (using expression of both alleles)">\n##INFO=<ID=Pos_miR,Number=1,Type=Integer,Description="SNP position in mature miR sequence">\n##INFO=<ID=Sens,Number=1,Type=String,Description="DNA Strand from which is transcribed the miRNA">\n##REF,ALT:Reference and alternative alleles as present in the mature miRNA. They might differ from DNA alleles, depending on miRNA sens (see INFOS)\n##Generated with OptimiR: based on the number of reads received by each polymiR allele. The decision depends on the INCONSISTENT_RATE_THRESHOLD defined by the user (default:0.01, meaning that, to be called, an allele must gather at least 1% of the reads aligned to the polymiR)\n#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	{}\n'.format("\t".join(sample_list))
+
+def print_vcf(path_dir):
+    if path_dir.endswith('/'):
+        path_dir = path_dir[:-1]
+    out_filename = '{}/../genotypes_OptimiR.vcf'.format(path_dir)
+    list_files = [f for f in os.listdir(path_dir) if ".vcf" in f]
+    d_vcf = {} ##[line_elts[0:9] as str] -> [sample_name] -> geno_s
+    samples = []
+    for file_in in list_files:
+        with open(path_dir + "/" + file_in, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                if line[0] == "#" and line[1] != "#":
+                    sample = line.split('\n')[0].split('\t')[-1]
+                    samples.append(sample)
+                elif line[0] != "#":
+                    elts = line.split('\n')[0].split('\t')
+                    key = "\t".join(elts[0:9])
+                    if key not in d_vcf:
+                        d_vcf[key] = {}
+                    d_vcf[key][sample] = elts[-1]
+    rs_list = d_vcf.keys()
+    rs_list.sort()
+    samples.sort()
+    with open(out_filename, 'w') as out:
+        out.write(get_vcf_header(samples))
+        for rs in rs_list:
+            out_genos = []
+            for sample in samples:
+                try:
+                    out_genos.append(d_vcf[rs][sample])
+                except KeyError:
+                    out_genos.append("./.:0,0")
+            line = "{}\t{}\n".format(rs, "\t".join(out_genos))
+            out.write(line)
             
+
 def print_tables(path_dir):
     sample_list, categories = get_sample_list(path_dir)
     for cat in categories:
@@ -253,6 +292,8 @@ def print_tables(path_dir):
         print_iso_dist(list_iso_files, path_iso_dist, path_dir)
     if len([f for f in os.listdir(path_dir) if ".gff3" in f]) > 0:
         print_gff(path_dir)
+    if len([f for f in os.listdir(path_dir) if ".vcf" in f]) > 0:
+        print_vcf(path_dir)
         
 ### MAIN
 if __name__ == "__main__":
