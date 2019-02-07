@@ -216,7 +216,7 @@ def write_polymiRs_outputs(bam_dict, bam, collapse_table, sample_name, dir_resul
                         list_genos = "UNAVAILABLE"
                     l = "{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(sample_name, ref_name, list_rsID, list_genos, counts_ref, counts_alt, rate_alt)
                     out.write(l)
-    if "WRITE_VCF":
+    if WRITE_VCF:
         ## Todo: move, clean, improve
         with open(out_vcf, 'w') as out:
             header= '##fileformat=VCFv4.1\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype inferred">\n##FORMAT=<ID=XC,Number=2,Type=Float,Description="Counts received on allele ref, Counts received on allele alt">\n##INFO=<ID=miR,Number=1,Type=String,Description="mature miRNA (or polymiR) from which genotype has been inferred (using expression of both alleles)">\n##INFO=<ID=Pos_miR,Number=1,Type=Integer,Description="SNP position in mature miR sequence">\n##INFO=<ID=Sens,Number=1,Type=String,Description="DNA Strand from which is transcribed the miRNA">\n##REF,ALT:Reference and alternative alleles as present in the mature miRNA. They might differ from DNA alleles, depending on miRNA sens (see INFOS)\n##Generated with OptimiR: based on the number of reads received by each polymiR allele. The decision is depends on the INCONSISTENT_RATE_THRESHOLD defined by the user (default:0.01, meaning that, to be called, an allele must gather at least 1% of the reads aligned to the polymiR)\n#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	{}\n'.format(sample_name)

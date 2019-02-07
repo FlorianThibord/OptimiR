@@ -183,8 +183,7 @@ def print_gff(path_dir):
         samples.sort()
         header = "{}{}## COLDATA: {}\n## Processed with OptimiR.\n##\n".format(header[0], header[1], ','.join(samples))
         out.write(header)
-        keylist = d.keys()
-        keylist.sort()
+        keylist = sorted(d)
         for key in keylist:
             entry = d[key]
             attr_list = ["UID", "Read","Parent","Name","Variant","Change","Cigar","Alias","Expression","Expression_OptimiR","Filter","Hits"]
@@ -239,7 +238,7 @@ def print_vcf(path_dir):
                     if key not in d_vcf:
                         d_vcf[key] = {}
                     d_vcf[key][sample] = elts[-1]
-    rs_list = d_vcf.keys()
+    rs_list = list(d_vcf.keys())
     rs_list.sort()
     samples.sort()
     with open(out_filename, 'w') as out:

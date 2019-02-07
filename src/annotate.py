@@ -8,6 +8,7 @@ from pysam import AlignmentFile
 
 ## Personal library
 from .essentials import *
+from . import scoring as SCORE
 
 def trimming_in_5end(alignment):
     pos = alignment.reference_start
@@ -122,8 +123,9 @@ def compute_isoform(a, reference_seq, hairpin_seq=''):
         iso3 = "+{}".format(end_3.upper())
     return '[{},{}]'.format(iso5, iso3)
 
-def multi_orig_hairpin(isotype_d):
+def multi_orig_hairpin(isotype_d, WEIGHT5):
     names, isotypes = list(isotype_d.keys()), list(isotype_d.values())
+    scores = [SCORE.compute_isotype_score(isotype,WEIGHT5) for isotype in isotypes]
     # if isotypes identical return only one
     identical = True
     for isotype in isotypes:
@@ -143,6 +145,7 @@ def multi_orig_hairpin(isotype_d):
     elif len(templated) == 1:
         return (templated.keys()[0], templated.values()[0])
     else:
+        names,isotypes,score_sorted = zip(*sorted(zip(names,isotypes,scores), key=lambda tup: tup[2]))
         names_str = names[0]
         isotypes_str = isotypes[0]
         if len(names) > 1:
@@ -152,7 +155,7 @@ def multi_orig_hairpin(isotype_d):
         return (names_str, isotypes_str)
 
 ## Update bam with isotype
-def isotyper(bam_dict, d_OptimiR):
+def isotyper(bam_dict, d_OptimiR, WEIGHT5):
     # flatten bam_dict.values() to a list of alignments
     alignments = [a for alignments in bam_dict.values() for a in alignments]
     for alignment in alignments:
@@ -165,11 +168,14 @@ def isotyper(bam_dict, d_OptimiR):
         for hairpin_name, hairpin_sequence in d_hairpins.items():
             isotype = compute_isoform(alignment, reference_sequence, hairpin_sequence)
             d_isotype[hairpin_name] = isotype
-        hairpin_names, isotypes = multi_orig_hairpin(d_isotype)
+        hairpin_names, isotypes = multi_orig_hairpin(d_isotype, WEIGHT5)
         alignment.set_tag("IT", "{}".format(isotypes.split('/')[0]))
         if len(isotypes.split('/')) > 1: ## if different isotypes on different hairpins, add them
             alignment.set_tag("I2", "{}".format(isotypes))
-        alignment.set_tag("PA", "{}".format(hairpin_names)) ## add all potential hairpins parents
+            alignment.set_tag("PA", "{}".format(hairpin_names.split('/')[0])) 
+            alignment.set_tag("P2", "{}".format(hairpin_names)) ## add all potential hairpins parents
+        else:
+            alignment.set_tag("PA", "{}".format(hairpin_names)) ## add all potential hairpins parents
 
 # Add XC tag with counts for each read, and remove it from read name
 # If multiple references, add tag MU with list of references

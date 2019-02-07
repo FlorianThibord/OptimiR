@@ -467,7 +467,7 @@ def write_gff(bam_dict, collapse_table, sample_name, d_OptimiR, out_fn, sourceDB
                 read = "Read={}".format(a.seq)
                 parent = "Parent={}".format(a.get_tag('PA'))
                 name = "Name={}".format(a.reference_name)
-                alias = "Alias={}".format(",".join(d_OptimiR[seqid].ident))
+                alias = "Alias={}".format(",".join(list(set([i.split('_')[0] for i in d_OptimiR[seqid].ident]))))
                 expression = "Expression={}".format(float(a.get_tag('XC')))
                 expression_optimir = "Expression_OptimiR={}".format(float(a.get_tag('XW')) * float(a.get_tag('XC')))
                 if a.has_tag('XX'):

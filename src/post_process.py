@@ -28,7 +28,7 @@ def post_process_main(tmpdir_mapping, tmpdir_postProcess, dir_results, collapse_
     bam = AlignmentFile('{}/{}.bam'.format(tmpdir_mapping, sample_name), 'rb')
     bam_dict = bamFile_to_dict(bam)
     # Compute isotype, look for parental hairpin, add IT tag with isotype, PA tag with parental hairpin, and I2 tag with isotypes on different hairpins
-    ANNOT.isotyper(bam_dict, d_OptimiR)
+    ANNOT.isotyper(bam_dict, d_OptimiR, WEIGHT5)
     # Compute alignment score, add SC tag
     fun_str_progress([], "alscore", VERBOSE)
     SCORE.get_alignment_score(bam_dict, WEIGHT5)
