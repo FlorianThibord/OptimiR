@@ -1,6 +1,8 @@
 # OptimiR
 miRSeq data alignment workflow - integrates genetic information to assess the impact of variants on miRNA expression
 
+Link to [publication](http://dx.doi.org/10.1261/rna.069708.118)
+
 ### Requirements
 
 The following python libraries must be installed: pysam and biopython (available through `pip`).
@@ -145,7 +147,7 @@ This happens a lot to reads mapping on `let-7` mature miRNAs, because their sequ
 
 The mirGFF3 format is a recently developed standard used in miRseq analysis (see the description of this format on the [GitHub page](https://github.com/miRTop/mirGFF3)). It should be noted that the current OptimiR output in mirGFF3 format will give mature miRNA ident as seqID, and might not be supported by mirtop yet. One can use the attribute optimiR_Expression to retrieve abundances computed by OptimiR in this format.
 
-The VCF output file can be generated when variants are provided by the user in an initial VCF without genotype information. In such situations, using the option `--vcf_out`, a VCF containing genotypes deduced by OptimiR on polymiRs will be produced. Be careful when using the results of this output, OptimiR is not a variant caller, these genotypes only reflect the expression level of both alleles of a polymiR, and do not necessarly reflect the DNA's genotype, as allelic imbalance is frequently observed for polymiRs (see the OptimiR's paper (doi:10.1261/rna.069708.118) results on allelic imbalance more additional informations).
+The VCF output file can be generated when variants are provided by the user in an initial VCF without genotype information. In such situations, using the option `--vcf_out`, a VCF containing genotypes deduced by OptimiR on polymiRs will be produced. Be careful when using the results of this output, OptimiR is not a variant caller, these genotypes only reflect the expression level of both alleles of a polymiR, and do not necessarly reflect the DNA's genotype, as allelic imbalance is frequently observed for polymiRs (see [OptimiR publication](http://dx.doi.org/10.1261/rna.069708.118)) results on allelic imbalance more additional informations).
 
 ### Summary Files
 
