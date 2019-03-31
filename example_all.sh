@@ -1,26 +1,29 @@
 VCF=./example/genotypes.vcf
-MATURES=./resources/fasta/hsa_matures_miRBase_v21.fa
-HAIRPINS=./resources/fasta//hsa_hairpins_miRBase_v21.fa
-GFF3=./resources/coordinates/hsa_miRBase_v21.gff3
-DIR_OUT=./Results
+DIR_OUT=./OptimiR_Results_Dir
+# MATURES=./optimir/resources/fasta/hsa_matures_miRBase_v21.fa
+# HAIRPINS=./optimir/resources/fasta/hsa_hairpins_miRBase_v21.fa
+# GFF3=./optimir/resources/coordinates/hsa_miRBase_v21.gff3
 
 # First prepare library if OptimiR is launched in parallel jobs locally - or better, on a cluster. (In this example, they are launched sequentially)
-python ./src/library_preparation.py \
+optimir libprep \
        -v $VCF \
-       -m $MATURES \
-       -p $HAIRPINS \
-       -g $GFF3 \
-       -o $DIR_OUT/OptimiR_lib/
+       -o $DIR_OUT # \
+       # -m $MATURES \
+       # -p $HAIRPINS \
+       # -g $GFF3 
 
 # Launch OptimiR on each sample (parallel computation is recommanded for many samples)
-./OPTIMIR \
+optimir process \
     --fq ./example/S1.fq.gz \
-    --dirOutput $DIR_OUT \
-    --vcf $VCF
-./OPTIMIR \
+    --vcf $VCF \
+    --gff_out \
+    --dirOutput $DIR_OUT 
+
+optimir process \
     --fq ./example/S2.fq.gz \
-    --dirOutput $DIR_OUT \
-    --vcf $VCF
+    --vcf $VCF \
+    --gff_out \
+    --dirOutput $DIR_OUT 
 
 # Make summary files
-./OPTIMIR_SUMMARY $DIR_OUT/OptimiR_Results
+optimir summarize --dir $DIR_OUT/OptimiR_Results

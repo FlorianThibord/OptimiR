@@ -1,5 +1,12 @@
-src/*pyc
-src/*~
-./*~
-./Results
-src/__pycache__
+## Compiled and temp files
+*pyc
+*~
+
+## Results from test
+OptimiR_Results_Dir/
+Results/
+
+## Install directories
+dist/
+build/
+OptimiR.egg-info/
