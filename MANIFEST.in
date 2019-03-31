@@ -1,0 +1,3 @@
+recursive-include optimir *py *.fa *.gff3
+include LICENSE
+include README.md
