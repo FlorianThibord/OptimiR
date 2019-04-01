@@ -85,6 +85,10 @@ def main():
     libprep_parser.add_argument("--bowtie2_build", dest="BOWTIE2_BUILD", default="bowtie2-build", required=False, help="Provide path to the bowtie2 index builder binary [default: from $PATH]")
     libprep_parser.set_defaults(func=library_preparation)
 
-    args = parser.parse_args()
-    args.func(args)
+    ## If no command is provided
+    if len(sys.argv[1:])==0:
+        parser.print_help()
+    else:
+        args = parser.parse_args()
+        args.func(args)
 
