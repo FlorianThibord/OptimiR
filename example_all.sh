@@ -1,3 +1,5 @@
+#!/bin/sh -e
+
 VCF=./example/genotypes.vcf
 DIR_OUT=./OptimiR_Results_Dir
 # MATURES=./optimir/resources/fasta/hsa_matures_miRBase_v21.fa
