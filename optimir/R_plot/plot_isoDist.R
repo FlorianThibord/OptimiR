@@ -12,7 +12,7 @@ res_directory <- paste(dirname(isomiR_table_path), "graphs", sep="/")
 if (!file.exists(res_directory)){
     dir.create(res_directory)
 }
-out_basename <- paste(res_directory, gsub(".annot", "", isomiR_table_path),sep="/")
+out_basename <- paste(res_directory, gsub(".annot", "", basename(isomiR_table_path)),sep="/")
 iso_d = read.table(isomiR_table_path, header=T)
 
 iso_plot <- function(l, out_basename){

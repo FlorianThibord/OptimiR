@@ -14,7 +14,7 @@ res_directory <- paste(dirname(polymiRs_table_path), "graphs", sep="/")
 if (!file.exists(res_directory)){
     dir.create(res_directory)
 }
-out_basename <- paste(res_directory, gsub(".annot", "", polymiRs_table_path),sep="/")
+out_basename <- paste(res_directory, gsub(".annot", "", basename(polymiRs_table_path)),sep="/")
 table = read.table(polymiRs_table_path, header=T, sep="\t")
 table$polymiR_id <- gsub(",", "_", paste(table$polymiR, table$rsID_list, sep="_"))
 sub_table = table[which(table$Genotype_list == "0/1" | table$Genotype_list == "1/0"),]
@@ -46,7 +46,7 @@ plot_ASE = function(sub_table, title, poly_name) {
 }
 
 sub_table$polymiR_id <- as.factor(gsub(",", "_", paste(sub_table$polymiR, sub_table$rsID_list, sep="_")))
-out_basename <- "graphs/ASE"
+out_basename <- paste(res_directory, "ASE", sep="/")
 for (l in levels(sub_table$polymiR_id)){
     subsub_table = sub_table[which(sub_table$polymiR_id == l),]
     title = paste(gsub("_", " / ", l), " (", nrow(subsub_table), " samples)", sep="")
