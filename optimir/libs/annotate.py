@@ -143,7 +143,7 @@ def multi_orig_hairpin(isotype_d, WEIGHT5):
                 names_str += '/{}'.format(n)
         return (names_str, isotypes[0])
     elif len(templated) == 1:
-        return (templated.keys()[0], templated.values()[0])
+        return (list(templated.keys())[0], list(templated.values())[0])
     else:
         names,isotypes,score_sorted = zip(*sorted(zip(names,isotypes,scores), key=lambda tup: tup[2]))
         names_str = names[0]
