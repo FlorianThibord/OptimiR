@@ -618,11 +618,12 @@ def process_iso(IT, dO, seq, reference_name):
     if len(variants) > 0:
         variants = "Variant={}".format(",".join(variants))
     else:
-        variants = ""
-    if len(changes) > 0:
-        changes = "Change={}".format(",".join(changes))
-    else:
-        changes = ""
+        variants = "Variant=NA"
+    # if len(changes) > 0:
+    #     changes = "Changes={}".format(",".join(changes))
+    # else:
+    #     changes = ""
+    changes = ""
     cigar = "Cigar={}".format(get_cigar(seq,d_snv,tail5,tail3,trim5))
     return (variants, changes, start, end, cigar, is_cano)
 
