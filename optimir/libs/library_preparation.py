@@ -205,8 +205,8 @@ def make_OptimiR_dict(d_sequence, d_ident):
                         d_OptimiR[polymiR_id] = OptimiR(polymiR_sequence, name, ident, coordinates, [], list(set(variants)), d_polymiR_hairpins)
                 ## Retrieve hairpins
                 for hairpin_name, hairpin_seq in hairpins[name].items():
-                    if hairpin_name in new_hairpins_dict:
-                        print("Hairpin allready present : {} in {}".format(hairpin_name, new_hairpin_dict))
+                    #if hairpin_name in new_hairpins_dict:
+                        #print("Hairpin allready present : {} in {}".format(hairpin_name, new_hairpins_dict))
                     new_hairpins_dict[hairpin_name] = hairpin_seq
         if is_mature:
             d_OptimiR[name] = OptimiR(sequence_obj.sequence, name, ident_list, sequence_obj.coordinates, polymiR_list, list(set(OptimiR_variant_list)), new_hairpins_dict)
