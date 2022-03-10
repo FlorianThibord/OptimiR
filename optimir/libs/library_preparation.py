@@ -21,7 +21,7 @@ import time
 
 ## Build alignment index with bowtie2-build
 def make_index(BOWTIE2_BUILD, index_path, fasta_file):
-    command_line = ("{} -f {} {} -q".format(BOWTIE2_BUILD, fasta_file, index_path))
+    command_line = ("{} -q -f {} {}".format(BOWTIE2_BUILD, fasta_file, index_path))
     ret_code = subprocess.call(command_line, shell=True)
     if ret_code != 0:
         raise Except_OS_Pipe('Bowtie2 index creation failed: command line = {}'.format(command_line))
